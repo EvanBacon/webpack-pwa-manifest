@@ -88,26 +88,20 @@ function manifest(options, publicPath, icons, callback) {
 
 export function buildResources(self, publicPath = '', callback) {
   if (self.assets && self.options.inject) {
-    console.log('already cached and ready to inject');
     // already cached and ready to inject
     callback();
   } else {
     publicPath = publicPath || '';
-    console.log('parseIcons');
     parseIcons(
       self.options.fingerprints,
       publicPath,
       retrieveIcons(self.options),
       (err, result) => {
-        console.log('parseIcons.results', err, !!result);
         if (err) {
           return;
         }
         const { icons, assets = [] } = result;
-
-        console.log('manifesto');
         manifest(self.options, publicPath, icons, (fail, manifest) => {
-          console.log('manifesto.results', fail, !!manifest);
           if (fail) {
             return;
           }
@@ -123,7 +117,6 @@ export function buildResources(self, publicPath = '', callback) {
 export function injectResources(compilation, assets, callback) {
   if (assets) {
     for (let asset of assets) {
-      console.log('injectResources.asset', asset);
       compilation.assets[asset.output] = {
         source: () => asset.source,
         size: () => asset.size,
