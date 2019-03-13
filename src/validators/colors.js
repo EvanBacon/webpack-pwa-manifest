@@ -22,6 +22,8 @@ export default function (config, ...properties) {
   if (!config) return
   for (let property of properties) {
     let color = config[property]
-    if (color && !(isHexColor(color) || isCssColor(color) || isRgbColor(color) || isRgbaColor(color))) throw new PresetError(property, color)
+    if (color && !(isHexColor(color) || isCssColor(color) || isRgbColor(color) || isRgbaColor(color))) {
+      throw new PresetError(property, color)
+    }
   }
 }
