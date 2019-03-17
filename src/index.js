@@ -19,6 +19,7 @@ const TAP = 'WebpackPwaManifest';
 
 const MAX_SHORT_NAME_LENGTH = 12;
 const DEFAULT_COLOR = '#4630EB';
+const DEFAULT_BACKGROUND_COLOR = '#ffffff';
 const DEFAULT_START_URL = '.';
 const DEFAULT_DISPLAY = 'fullscreen';
 const DEFAULT_STATUS_BAR = 'default';
@@ -55,8 +56,11 @@ const ICON_SIZES = [96, 128, 192, 256, 384, 512];
  *
  * To test PWAs in chrome visit `chrome://flags#enable-desktop-pwas`
  */
+
+const absolutePath = (...pathComponents) => path.resolve(process.cwd(), ...pathComponents);
+
 class WebpackPwaManifest {
-  constructor(appJson) {
+  constructor(appJson, options) {
     if (!isObject(appJson)) {
       throw new Error('app.json must be an object');
     }
@@ -77,7 +81,11 @@ class WebpackPwaManifest {
      * to provide a smooth transition from the splash screen to your app.
      */
 
-    const backgroundColor = web.backgroundColor || web.background_color || splash.backgroundColor; // No default background color
+    const backgroundColor =
+      web.backgroundColor ||
+      web.background_color ||
+      splash.backgroundColor ||
+      DEFAULT_BACKGROUND_COLOR; // No default background color
 
     // The theme_color sets the color of the tool bar, and may be reflected in the app's preview in task switchers.
     // TODO: Bacon: Ensure this is covered by `WebpackPwaManifest`: the theme_color should match the meta theme color specified in your document head.
@@ -147,16 +155,16 @@ class WebpackPwaManifest {
     let icons = [];
     let icon;
     if (web.icon || nativeManifest.icon) {
-      icon = locations.absolute(web.icon || nativeManifest.icon);
+      icon = absolutePath(web.icon || nativeManifest.icon);
     } else {
       // Use template icon
-      icon = locations.template.get('icon.png');
+      icon = options.defaultIcon;
     }
     icons.push({ src: icon, size: ICON_SIZES });
     let startupImages = [];
     const iOSIcon = nativeManifest.icon || ios.icon;
     if (iOSIcon) {
-      const iOSIconPath = locations.absolute(iOSIcon);
+      const iOSIconPath = absolutePath(iOSIcon);
       icons.push({
         ios: true,
         size: 1024,
@@ -166,7 +174,7 @@ class WebpackPwaManifest {
       const { splash: iOSSplash = {} } = ios;
       let splashImageSource = iOSIconPath;
       if (iOSSplash.image || splash.image) {
-        splashImageSource = locations.absolute(iOSSplash.image || splash.image);
+        splashImageSource = absolutePath(iOSSplash.image || splash.image);
       }
       // <link rel="apple-touch-startup-image" href="images/splash/launch-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
       // <link rel="apple-touch-startup-image" href="images/splash/launch-750x1294.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
@@ -210,7 +218,11 @@ class WebpackPwaManifest {
       );
     }
 
-    if (strict && display && !['fullscreen', 'standalone', 'minimal-ui'].includes(display)) {
+    if (
+      options.strict &&
+      display &&
+      !['fullscreen', 'standalone', 'minimal-ui'].includes(display)
+    ) {
       warn(
         `web.display: ${display} is not a valid PWA display and will prevent the app install banner from being shown.`
       );
@@ -256,7 +268,7 @@ class WebpackPwaManifest {
       description: description,
       dir,
       display: display,
-      filename: locations.production.manifest,
+      filename: options.filename,
       includeDirectory: false,
       icons: icons,
       startupImages,
@@ -276,7 +288,7 @@ class WebpackPwaManifest {
     });
   }
 
-  _parseOptions = options => {
+  _parseOptions(options) {
     validatePresets(options, 'dir', 'display', 'orientation', 'crossorigin');
     validateColors(options, 'background_color', 'theme_color');
     checkDeprecated(options, 'useWebpackPublicPath');
@@ -300,7 +312,7 @@ class WebpackPwaManifest {
       crossorigin: null,
       ...options,
     };
-  };
+  }
 
   apply(compiler) {
     const self = this;
