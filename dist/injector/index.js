@@ -94,15 +94,11 @@ function buildResources(self) {
   var callback = arguments.length > 2 ? arguments[2] : undefined;
 
   if (self.assets && self.options.inject) {
-    console.log('already cached and ready to inject'); // already cached and ready to inject
-
+    // already cached and ready to inject
     callback();
   } else {
     publicPath = publicPath || '';
-    console.log('parseIcons');
     (0, _icons.parseIcons)(self.options.fingerprints, publicPath, (0, _icons.retrieveIcons)(self.options), function (err, result) {
-      console.log('parseIcons.results', err, !!result);
-
       if (err) {
         return;
       }
@@ -110,10 +106,7 @@ function buildResources(self) {
       var icons = result.icons,
           _result$assets = result.assets,
           assets = _result$assets === void 0 ? [] : _result$assets;
-      console.log('manifesto');
       manifest(self.options, publicPath, icons, function (fail, manifest) {
-        console.log('manifesto.results', fail, !!manifest);
-
         if (fail) {
           return;
         }
@@ -135,7 +128,6 @@ function injectResources(compilation, assets, callback) {
     try {
       var _loop = function _loop() {
         var asset = _step.value;
-        console.log('injectResources.asset', asset);
         compilation.assets[asset.output] = {
           source: function source() {
             return asset.source;
@@ -200,13 +192,15 @@ function generateAppleTags(options, assets) {
 
           if (asset.ios && asset.ios.valid) {
             if (asset.ios.valid === 'startup') {
+              console.log('valid', asset);
               applyTag(tags, 'link', {
                 rel: 'apple-touch-startup-image',
-                sizes: asset.ios.size,
+                media: asset.ios.media,
                 href: asset.ios.href
               });
             } else {
               applyTag(tags, 'link', {
+                // apple-touch-icon-precomposed
                 rel: 'apple-touch-icon',
                 sizes: asset.ios.size,
                 href: asset.ios.href

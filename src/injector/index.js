@@ -51,10 +51,7 @@ function createFilename(filenameTemplate, json, shouldFingerprint) {
     },
   ];
 
-  return formatters.reduce(
-    (acc, curr) => acc.replace(curr.pattern, curr.value),
-    filenameTemplate,
-  );
+  return formatters.reduce((acc, curr) => acc.replace(curr.pattern, curr.value), filenameTemplate);
 }
 
 function manifest(options, publicPath, icons, callback) {
@@ -75,9 +72,7 @@ function manifest(options, publicPath, icons, callback) {
   const json = JSON.stringify(content, null, 2);
   const file = path.parse(options.filename);
   const filename = createFilename(file.base, json, options.fingerprints);
-  const output = options.includeDirectory
-    ? path.join(file.dir, filename)
-    : filename;
+  const output = options.includeDirectory ? path.join(file.dir, filename) : filename;
   callback(null, {
     output,
     url: joinURI(publicPath, output),
@@ -109,7 +104,7 @@ export function buildResources(self, publicPath = '', callback) {
           self.assets = [manifest, ...assets];
           callback();
         });
-      },
+      }
     );
   }
 }
@@ -150,13 +145,15 @@ export function generateAppleTags(options, assets) {
       for (let asset of assets) {
         if (asset.ios && asset.ios.valid) {
           if (asset.ios.valid === 'startup') {
+            console.log('valid', asset);
             applyTag(tags, 'link', {
               rel: 'apple-touch-startup-image',
-              sizes: asset.ios.size,
+              media: asset.ios.media,
               href: asset.ios.href,
             });
           } else {
             applyTag(tags, 'link', {
+              // apple-touch-icon-precomposed
               rel: 'apple-touch-icon',
               sizes: asset.ios.size,
               href: asset.ios.href,
@@ -170,9 +167,7 @@ export function generateAppleTags(options, assets) {
 }
 
 export function generateMaskIconLink(tags, assets) {
-  const svgAsset = assets.find(
-    asset => /[^.]+$/.exec(asset.output)[0] === 'svg',
-  );
+  const svgAsset = assets.find(asset => /[^.]+$/.exec(asset.output)[0] === 'svg');
   if (svgAsset) {
     applyTag(
       tags,
@@ -182,8 +177,8 @@ export function generateMaskIconLink(tags, assets) {
           rel: 'mask-icon',
           href: svgAsset.url,
         },
-        !!svgAsset.color && { color: svgAsset.color },
-      ),
+        !!svgAsset.color && { color: svgAsset.color }
+      )
     );
   }
   return tags;
@@ -222,8 +217,7 @@ function formatAppleTag(tag, content) {
     };
   } else if (tag === 'apple-mobile-web-app-capable') {
     let value = content;
-    if (typeof content === 'boolean' || typeof content === 'number')
-      value = content ? 'yes' : 'no';
+    if (typeof content === 'boolean' || typeof content === 'number') value = content ? 'yes' : 'no';
     return {
       name: tag,
       content: value,
